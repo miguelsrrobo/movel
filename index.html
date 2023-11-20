@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sequenciador Móvel</title>
+</head>
+<body>
+  <label for="emissorCount">Quantidade de Grupos Emissor:</label>
+  <input type="number" id="emissorCount" value="1">
+  <br/>
+  <label for="sequenciadorCount">Quantidade de Grupos Sequenciador:</label>
+  <input type="number" id="sequenciadorCount" value="1">
+  <br/>
+  <label for="receptorCount">Quantidade de Grupos Receptor:</label>
+  <input type="number" id="receptorCount" value="1">
+  <br/>
+  <button onclick="iniciar()">Confirmar</button>
+
+  <div id="output"></div>
+
+  <div id="info"></div>
+
+  <script>
+    function iniciar() {
+      const emissorCount = parseInt(document.getElementById("emissorCount").value);
+      const sequenciadorCount = parseInt(document.getElementById("sequenciadorCount").value);
+      const receptorCount = parseInt(document.getElementById("receptorCount").value);
+
+      const emissores = criarGrupos("Emissor", emissorCount);
+      const sequenciadores = criarGrupos("Sequenciador", sequenciadorCount);
+      const receptores = criarGrupos("Receptor", receptorCount);
+
+      // Exibir informações na div 'info'
+      exibirInformacoes("Emissor", emissores);
+      exibirInformacoes("Sequenciador", sequenciadores);
+      exibirInformacoes("Receptor", receptores);
+
+      // Exemplo de utilização
+      emissores[0].enviarMensagem("Mensagem Importante");
+    }
+
+    class SequenciadorMovel {
+      constructor(id, totalSequenciadores) {
+        this.id = id;
+        this.totalSequenciadores = totalSequenciadores;
+        this.tokenHolder = 0;
+        this.mensagensPendentes = [];
+        this.outputDiv = document.getElementById("output");
+      }
+
+      enviarMensagem(mensagem) {
+        if (this.tokenHolder === this.id) {
+          this.repasseMensagem(mensagem);
+        } else {
+          this.mensagensPendentes.push(mensagem);
+        }
+      }
+
+      repasseMensagem(mensagem) {
+        const mensagemOutput = `Sequenciador ${this.id} repassou a mensagem: ${mensagem}`;
+        this.outputDiv.innerHTML += `<p>${mensagemOutput}</p>`;
+
+        this.tokenHolder = (this.tokenHolder + 1) % this.totalSequenciadores;
+
+        if (this.mensagensPendentes.length > 0) {
+          const proximaMensagem = this.mensagensPendentes.shift();
+          this.repasseMensagem(proximaMensagem);
+        }
+      }
+    }
+
+    function criarGrupos(tipo, count) {
+      const grupos = [];
+      for (let i = 0; i < count; i++) {
+        grupos.push(new SequenciadorMovel(i, count));
+      }
+      return grupos;
+    }
+
+    function exibirInformacoes(tipo, grupos) {
+      const infoDiv = document.getElementById("info");
+      infoDiv.innerHTML += `<p>${tipo}s criados: ${JSON.stringify(grupos)}</p>`;
+    }
+  </script>
+</body>
+</html>
